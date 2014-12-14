@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Replication.h"
-#include "UnrealNetwork.h"
-#include "MasterItemActor.h"
+#include "Survisland.h"
 #include "Inventory.h"
+#include "UnrealNetwork.h"
+
 
 //
 // *** Basic Functionality ***
@@ -22,16 +22,16 @@ bool UInventory::GetStackByClass(TSubclassOf<class AMasterItemActor> inClass, bo
 	for (auto bIterator(inInventory.CreateIterator()); bIterator; bIterator++)
 	{
 		if (!bIterator) continue;
-		
+
 		if (bIterator->bClass == inClass) {
-			
+
 			FItemInfo bItemInfo;
 			GetItemInfo(inClass, bItemInfo);
 
 			if (bIterator->bCount < bItemInfo.bItemStackSize) {
 				outStructure = *bIterator;
 				FoundIndex = bIterator.GetIndex();
-				
+
 				return true;
 			}
 			else {
@@ -46,7 +46,7 @@ bool UInventory::GetStackByClass(TSubclassOf<class AMasterItemActor> inClass, bo
 		}
 
 	}
-	
+
 	return false;
 }
 
@@ -99,7 +99,7 @@ bool UInventory::GetStackByIndex(int32 inIndex, TArray<FInventoryStructure> inIn
 }
 
 bool UInventory::GetStackByID(FString inID, TArray<FInventoryStructure> inInventory, FInventoryStructure & outStructure, int32 & FoundIndex) {
-	
+
 	if (inID == "")
 		return false;
 
@@ -147,7 +147,6 @@ bool UInventory::GetFreeInventorySpace(TSubclassOf<class AMasterItemActor> inCla
 	return true;
 }
 
-
 bool UInventory::GetFreeInventorySlots(TArray<FInventoryStructure> inInventory, int32 & outCount) {
 	int32 intCounter = 0;
 
@@ -174,7 +173,7 @@ bool UInventory::GetFreeInventorySlots(TArray<FInventoryStructure> inInventory, 
 bool UInventory::GetItemInfo(TSubclassOf<AMasterItemActor> bItemClass, FItemInfo & bIteminfo) {
 	if (!bItemClass.GetDefaultObject())
 		return false;
-	
+
 	bIteminfo = bItemClass.GetDefaultObject()->bIteminfo;
 	return true;
 }
@@ -186,9 +185,9 @@ bool UInventory::GetItemInfo(TSubclassOf<AMasterItemActor> bItemClass, FItemInfo
 //
 void UInventory::GetUniqueID(FString & bUniqueID) {
 	bUniqueID = FString();
-	
+
 	for (int i = 0; i < 5; i++)
-		bUniqueID.AppendInt(FMath::RandRange(INT32_MIN / 11, INT32_MAX / 11));	
+		bUniqueID.AppendInt(FMath::RandRange(INT32_MIN / 11, INT32_MAX / 11));
 }
 
 int32 UInventory::StacksFromAmount(TSubclassOf<class AMasterItemActor> inClass, int32 inAmount) {
@@ -197,14 +196,13 @@ int32 UInventory::StacksFromAmount(TSubclassOf<class AMasterItemActor> inClass, 
 
 	if (inAmount == 0)
 		return 0;
-	
+
 	int32 Amount = FMath::DivideAndRoundUp(inAmount, bItemInfo.bItemStackSize);
 	return Amount;
 }
 
-
 bool UInventory::AddToInventory(TSubclassOf<class AMasterItemActor> inClass, TArray<FInventoryStructure>& inInventory, int32 Amount, bool AddNewStack) {
-	bool result;	
+	bool result;
 	FItemInfo bItemInfo;
 	int32 FoundStack = -1;
 
@@ -212,12 +210,12 @@ bool UInventory::AddToInventory(TSubclassOf<class AMasterItemActor> inClass, TAr
 		return false;
 
 	if (!AddNewStack) {
-		
+
 		FInventoryStructure bInvStruct;
 
 		result = GetStackByClass(inClass, false, inInventory, bInvStruct, FoundStack);
 		if (result) {
-			
+
 			GetItemInfo(inClass, bItemInfo);
 
 			FInventoryStructure bItemStruct;
@@ -230,7 +228,7 @@ bool UInventory::AddToInventory(TSubclassOf<class AMasterItemActor> inClass, TAr
 				inInventory[FoundStack].bCount = bItemInfo.bItemStackSize;
 
 				AddToInventory(inClass, inInventory, Remainder, false);
-				
+
 				return true;
 			}
 			else {
@@ -254,7 +252,7 @@ bool UInventory::AddToInventory(TSubclassOf<class AMasterItemActor> inClass, TAr
 				int32 Remainder = Amount - bItemInfo.bItemStackSize;
 				FInventoryStructure bItemStruct;
 
-				result = GetStackByClass(NULL, false, inInventory, bItemStruct, FoundStack);
+				result = GetStackByClass(NULL, true, inInventory, bItemStruct, FoundStack);
 
 				if (!result)
 					return false;
@@ -275,7 +273,7 @@ bool UInventory::AddToInventory(TSubclassOf<class AMasterItemActor> inClass, TAr
 				//Less than 1 Stack
 				FInventoryStructure bItemStruct;
 
-				result = GetStackByClass(NULL, false, inInventory, bItemStruct, FoundStack);
+				result = GetStackByClass(NULL, true, inInventory, bItemStruct, FoundStack);
 
 				if (!result)
 					return false;
@@ -297,20 +295,20 @@ bool UInventory::AddToInventory(TSubclassOf<class AMasterItemActor> inClass, TAr
 		GetFreeInventorySlots(inInventory, FreeSlots);
 
 		if (StacksFromAmount(inClass, Amount) > FreeSlots)
-			return false;		
+			return false;
 
 		FItemInfo bItemInfo;
 		GetItemInfo(inClass, bItemInfo);
-		
+
 		int32 SlotIndex;
 		FInventoryStructure bInventoryStructure;
 
-		GetStackByClass(NULL, true, inInventory, bInventoryStructure, SlotIndex);		
+		GetStackByClass(NULL, true, inInventory, bInventoryStructure, SlotIndex);
 
 		if (bItemInfo.bItemStackSize >= Amount) {
 			inInventory[SlotIndex].bClass = inClass;
 			inInventory[SlotIndex].bCount = Amount;
-			
+
 			FString bID;
 			GetUniqueID(bID);
 
@@ -329,7 +327,7 @@ bool UInventory::AddToInventory(TSubclassOf<class AMasterItemActor> inClass, TAr
 
 			AddToInventory(inClass, inInventory, Amount - bItemInfo.bItemStackSize, true);
 			return true;
-		}	
+		}
 	}
 	return true;
 }
@@ -347,11 +345,11 @@ bool UInventory::RemoveFromInventory(TSubclassOf<class AMasterItemActor> inClass
 		return false;
 
 	GetStackByClass(inClass, true, inInventory, bInventoryStructure, intInteger);
-	
+
 	if (bInventoryStructure.bCount > Amount) {
 		inInventory[intInteger].bCount -= Amount;
 		return true;
-	} 
+	}
 	else {
 		intRemainder = Amount - bInventoryStructure.bCount;
 
@@ -370,7 +368,7 @@ bool UInventory::RemoveFromStack(int32 inIndex, TArray<FInventoryStructure>& inI
 	if (Amount > bInventoryStructure.bCount)
 		return false;
 
-	if(RemoveWholeStack) {
+	if (RemoveWholeStack) {
 		inInventory[inIndex] = FInventoryStructure();
 		return true;
 	}
@@ -417,7 +415,7 @@ bool UInventory::MergeStacks(TArray<FInventoryStructure>& inInventory, int32 inI
 
 	GetStackByIndex(inIndexA, inInventory, bInventoryStructureA);
 	GetStackByIndex(inIndexB, inInventory, bInventoryStructureB);
-	
+
 	GetItemInfo(inInventory[inIndexA].bClass, bItemInfo);
 
 	if (inInventory[inIndexA].bClass != inInventory[inIndexB].bClass)
@@ -438,3 +436,4 @@ bool UInventory::MergeStacks(TArray<FInventoryStructure>& inInventory, int32 inI
 	}
 
 }
+

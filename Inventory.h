@@ -80,9 +80,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	static bool GetFreeInventorySlots(TArray<FInventoryStructure> inInventory, int32 & outCount);
 
-
-
-
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	static bool AddToInventory(TSubclassOf<class AMasterItemActor> inClass, UPARAM(ref) TArray<FInventoryStructure> & inInventory, int32 Amount, bool AddNewStack);
 
